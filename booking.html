@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book an Appointment | Word of Faith DMI</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .booking-wrap { max-width: 640px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+    .booking-wrap .box { margin-top: 2.5rem; }
+    .hp { position: absolute; left: -9999px; }
+    .notice { padding: 1rem; margin-top: 1rem; border: 1px solid var(--gold); line-height: 1.6; }
+    .notice.error { border-color: #c0392b; }
+    .consent { display: flex; gap: .6rem; align-items: flex-start; font-size: .9rem; }
+    .consent input { margin-top: .25rem; width: auto; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="nav-logo">WOFDMI</span>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#sermons">Sermons</a></li>
+      <li><a href="index.html#messages">Write to Us</a></li>
+    </ul>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Open menu"><span></span><span></span><span></span></button>
+  </nav>
+
+  <main class="booking-wrap">
+    <h1 class="section-title">Book an appointment</h1>
+    <p class="section-subtitle">Choose deliverance or counselling and a time that suits you. Our team will confirm or suggest another time.</p>
+
+    <form id="booking-form" class="messages-form">
+      <div class="form-group"><label for="full_name">Full name</label>
+        <input id="full_name" required maxlength="100"></div>
+      <div class="form-group"><label for="contact">Phone number or email</label>
+        <input id="contact" required maxlength="100" placeholder="e.g. +267 71 234 567"></div>
+      <div class="form-group"><label for="service">Service</label>
+        <select id="service" required>
+          <option value="">Select a service...</option>
+          <option value="deliverance">Deliverance</option>
+          <option value="counselling">Counselling</option>
+        </select></div>
+      <div class="form-group"><label for="preferred_date">Preferred date</label>
+        <input id="preferred_date" type="date" required></div>
+      <div class="form-group"><label for="preferred_time">Preferred time</label>
+        <select id="preferred_time" required>
+          <option value="">Select a time...</option>
+          <option>09:00</option><option>10:00</option><option>11:00</option>
+          <option>14:00</option><option>15:00</option><option>16:00</option>
+        </select></div>
+      <div class="form-group"><label for="note">Anything we should know? (optional)</label>
+        <textarea id="note" maxlength="500" placeholder="Keep it brief. You can share details in your session."></textarea></div>
+      <input class="hp" id="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <label class="consent"><input type="checkbox" id="consent" required>
+        I agree that my details are used only to arrange my appointment.</label>
+      <button type="submit" class="btn btn-primary" id="submit-btn" style="width:100%; justify-content:center; margin-top:1rem;">Request appointment</button>
+      <div id="result" role="status"></div>
+    </form>
+
+    <div class="box">
+      <h2 class="section-title" style="font-size:1.5rem">Check my booking</h2>
+      <form id="status-form" class="messages-form">
+        <div class="form-group"><label for="ref">Reference code</label>
+          <input id="ref" required maxlength="20"></div>
+        <button type="submit" class="btn btn-outline" style="width:100%; justify-content:center;">Check status</button>
+        <div id="status-result" role="status"></div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="js/supabase.js"></script>
+  <script>
+    document.getElementById("nav-toggle").onclick = () => document.getElementById("nav-links").classList.toggle("open");
+    const $ = id => document.getElementById(id);
+    $("preferred_date").min = new Date().toISOString().split("T")[0];
+
+    function newRef() {
+      const c = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+      return Array.from(crypto.getRandomValues(new Uint8Array(8)), b => c[b % c.length]).join("");
+    }
+    function show(el, msg, isError) {
+      el.className = "notice" + (isError ? " error" : "");
+      el.innerHTML = msg;
+    }
+
+    $("booking-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      if ($("website").value) return; // spam bots fill this hidden field
+      const btn = $("submit-btn"); btn.disabled = true;
+      const reference = newRef();
+      const { error } = await db.from("bookings").insert({
+        reference,
+        full_name: $("full_name").value.trim(),
+        contact: $("contact").value.trim(),
+        service: $("service").value,
+        preferred_date: $("preferred_date").value,
+        preferred_time: $("preferred_time").value,
+        note: $("note").value.trim() || null
+      });
+      btn.disabled = false;
+      if (error) return show($("result"), "Your request was not sent. Please try again, or contact us by email.", true);
+      e.target.reset();
+      show($("result"), "Request received. Your reference code is <strong>" + reference + "</strong>. Save it to check your booking status below.");
+    });
+
+    $("status-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const { data, error } = await db.rpc("get_booking_status", { ref: $("ref").value.trim().toUpperCase() });
+      const out = $("status-result");
+      if (error) return show(out, "Could not check right now. Please try again.", true);
+      if (!data || !data.length) return show(out, "No booking found for that code. Check it and try again.", true);
+      const b = data[0];
+      const labels = { pending: "Waiting for approval", approved: "Approved", declined: "Declined", reschedule: "A new time has been suggested" };
+      let html = "<strong>" + esc(labels[b.status] || b.status) + "</strong><br>" +
+        esc(b.service) + " on " + esc(b.preferred_date) + " at " + esc(b.preferred_time);
+      if (b.status === "reschedule" && b.proposed_date) html += "<br>Suggested time: " + esc(b.proposed_date) + " at " + esc(b.proposed_time);
+      if (b.admin_note) html += "<br>Message from our team: " + esc(b.admin_note);
+      show(out, html);
+    });
+  </script>
+</body>
+</html>
