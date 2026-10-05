@@ -6,6 +6,9 @@
   <title>Book an Appointment | Word of Faith DMI</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
+    .phone-row {display: flex; gap: .5rem; flex-wrap: wrap; }
+    .phone-row select {width: 12rem; Flex: 0 0 auto; }
+    .phone-row input {Flex: 1; min-width: 10rem;} 
     .booking-wrap { max-width: 640px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
     .booking-wrap .box { margin-top: 2.5rem; }
     .hp { position: absolute; left: -9999px; }
@@ -33,8 +36,33 @@
     <form id="booking-form" class="messages-form">
       <div class="form-group"><label for="full_name">Full name</label>
         <input id="full_name" required maxlength="100"></div>
-      <div class="form-group"><label for="contact">Phone number or email</label>
-        <input id="contact" required maxlength="100" placeholder="e.g. +267 71 234 567"></div>
+        <div class="form-group"><label for="phone">Phone number (WhatsApp if possible)</label>
+  <div class="phone-row">
+    <select id="country_code" aria-label="Country code">
+      <option value="+267" selected>Botswana +267</option>
+      <option value="+27">South Africa +27</option>
+      <option value="+263">Zimbabwe +263</option>
+      <option value="+264">Namibia +264</option>
+      <option value="+260">Zambia +260</option>
+      <option value="+258">Mozambique +258</option>
+      <option value="+265">Malawi +265</option>
+      <option value="+266">Lesotho +266</option>
+      <option value="+268">Eswatini +268</option>
+      <option value="+244">Angola +244</option>
+      <option value="+243">DR Congo +243</option>
+      <option value="+255">Tanzania +255</option>
+      <option value="+254">Kenya +254</option>
+      <option value="+256">Uganda +256</option>
+      <option value="+234">Nigeria +234</option>
+      <option value="+233">Ghana +233</option>
+      <option value="+44">United Kingdom +44</option>
+      <option value="+1">USA / Canada +1</option>
+      <option value="+61">Australia +61</option>
+      <option value="+91">India +91</option>
+      <option value="other">Other (type the full number with +)</option>
+    </select>
+    <input id="phone" type="tel" inputmode="tel" required maxlength="20" placeholder="71 234 567" autocomplete="tel-national">
+  </div></div>
       <div class="form-group"><label for="service">Service</label>
         <select id="service" required>
           <option value="">Select a service...</option>
@@ -72,6 +100,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="js/supabase.js"></script>
   <script>
+    function buildContact() {
+  const code = $("country_code").value;
+  let num = $("phone").value.replace(/[\s\-()]/g, "");
+  if (code === "other") return /^\+\d{7,15}$/.test(num) ? num : null;
+  num = num.replace(/^0+/, ""); // drop a leading 0 such as 071...
+  return /^\d{6,12}$/.test(num) ? code + " " + num : null;
+}
     document.getElementById("nav-toggle").onclick = () => document.getElementById("nav-links").classList.toggle("open");
     const $ = id => document.getElementById(id);
     $("preferred_date").min = new Date().toISOString().split("T")[0];
@@ -88,12 +123,14 @@
     $("booking-form").addEventListener("submit", async e => {
       e.preventDefault();
       if ($("website").value) return; // spam bots fill this hidden field
+      const contact = buildContact();
+if (!contact) return show($("result"), "Please enter a valid phone number. Choose your country code, then type the number without the code.", true);
       const btn = $("submit-btn"); btn.disabled = true;
       const reference = newRef();
       const { error } = await db.from("bookings").insert({
         reference,
         full_name: $("full_name").value.trim(),
-        contact: $("contact").value.trim(),
+        contact: contact,
         service: $("service").value,
         preferred_date: $("preferred_date").value,
         preferred_time: $("preferred_time").value,
