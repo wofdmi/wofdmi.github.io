@@ -140,3 +140,4 @@ footer { background: var(--gold-bg); color: var(--ink); padding: 2.5rem 1.5rem 2
   html { scroll-behavior: auto; }
   .live-dot { animation: none; }
 }
+.about-photo {display: block; width: 100%; aspect ratio: 3 / 2; object-fit: cover; object-position: center 40%; border-radius: 16px border: 1px solid var(--line); }
