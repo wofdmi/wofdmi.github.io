@@ -33,17 +33,17 @@ body > main { width: 100%; }
 section + section { border-top: 1px solid var(--line); }
 
 /* Header banner */
-.site-header { background: var(--white); text-align: center; padding: .25rem 1.5rem 1rem; }
+.site-header { background: var(--white); padding: .5rem 1.5rem 1.25rem; text-align: center; }
 .header-banner { display: block; width: 100%; max-width: 1100px; height: auto; margin: 0 auto; }
 .header-tagline { font-family: 'Fraunces', Georgia, serif; color: var(--ink); margin-top: .4rem; }
 
 /* Navigation: gold bar with a hidden menu */
-nav { position: sticky; top: 0; z-index: 50; order: -1; display: flex; justify-content: space-between; align-items: center; padding: .5rem 1.25rem; background: var(--white); border-bottom: 1px solid transparent; transition: border-color .25s, box-shadow .25s; }
+nav { position: sticky; top: 0; z-index: 50; order: -1; display: flex; justify-content: space-between; align-items: center; padding: .5rem 1.25rem; min-height: 64px; background: var(--white); border-bottom: 1px solid transparent; transition: border-color .25s, box-shadow .25s; }
 nav.scrolled { border-bottom-color: var(--line); box-shadow: 0 4px 16px rgba(0, 0, 0, .07); }
 .nav-logo { display: block; width: 46px; height: 46px; flex: none; overflow: hidden; white-space: nowrap; text-indent: -9999px; background: url('../images/logo.png') center / contain no-repeat; transition: opacity .3s; }
 .nav-logo img { display: none; }
 nav.at-top .nav-logo { opacity: 0; pointer-events: none; }
-.nav-toggle { display: flex; flex-direction: column; gap: 5px; background: none; border: 0; cursor: pointer; padding: .5rem; }
+.nav-toggle { margin-left: auto; display: flex; flex-direction: column; gap: 5px; background: none; border: 0; cursor: pointer; padding: .5rem; }
 .nav-toggle span { width: 26px; height: 2px; background: var(--ink); }
 .nav-links { display: none; position: absolute; top: 100%; right: 0; width: min(320px, 100%); list-style: none; background: var(--panel); padding: .75rem 0 1rem; box-shadow: 0 12px 30px rgba(0, 0, 0, .25); }
 .nav-links.open { display: block; }
@@ -178,3 +178,11 @@ footer { background: var(--white); color: var(--ink); border-top: 1px solid var(
 .ab-quote figcaption { margin-top: .75rem; font-weight: 600; }
 @media (max-width: 900px) { .ab-wrap { grid-template-columns: 1fr; gap: 3rem; } .ab-pillars { grid-template-columns: 1fr 1fr; } .ab-photo::before { inset: 1rem -.5rem -1rem .5rem; } .ab-badge { left: .5rem; } }
 @media (max-width: 520px) { .ab-pillars { grid-template-columns: 1fr; } }
+
+/* Brand banner: big logo + Jubilee text; the logo shrinks into the top-left corner on scroll */
+.brand-row { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: clamp(1rem, 4vw, 3rem); }
+.brand-slot { flex: none; width: clamp(110px, 22vw, 230px); aspect-ratio: 1; }
+#brand-logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+#brand-logo.docked { position: fixed; z-index: 60; }
+.brand-jubilee { flex: 1 1 auto; min-width: 0; max-width: 700px; height: auto; }
+body.has-dock .nav-logo { display: none; }
