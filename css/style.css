@@ -196,3 +196,6 @@ body.has-dock .nav-logo { display: none; }
 .ef-prices { list-style: none; display: flex; gap: .6rem; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
 .ef-prices li { border: 1.5px solid var(--gold-bg); border-radius: 999px; padding: .4rem .9rem; font-weight: 600; color: var(--ink); }
 @media (max-width: 820px) { .event-feature { grid-template-columns: 1fr; } }
+/* Never let images or the page be wider than the screen */
+img { max-width: 100%; height: auto; }
+body { overflow-x: clip; }

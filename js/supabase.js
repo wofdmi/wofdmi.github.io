@@ -1,12 +1,9 @@
-// Paste your own values from Supabase: Project Settings > API.
-// Only the anon public key goes here. Never use the service_role key.
-const SUPABASE_URL = "http://localhost:3000";
-const SUPABASE_ANON_KEY = "https://lzsgyygicnyjhwdjilav.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://lzsgyygicnyjhwdjilav.supabase.co":
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6c2d5eWdpY255amh3ZGppbGF2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExNTI0MDEsImV4cCI6MjEwNjcyODQwMX0.cAGsirKMNchf6uIV93ROZ5WaYR7xmoitf1AUbHMMZlw"
+drop policy if exists "admin reads all" on bookings;
+drop policy if exists "admin updates" on bookings;
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-function esc(s) {
-  const d = document.createElement("div");
-  d.textContent = s ?? "";
-  return d.innerHTML;
-}
+create policy "admin reads all" on bookings for select to authenticated
+  using ((auth.jwt() ->> 'email') = 'wofdmi.hq@gmail.com');
+create policy "admin updates" on bookings for update to authenticated
+  using ((auth.jwt() ->> 'email') = 'wofdmi.hq@gmail.com');
